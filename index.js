@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -31,13 +31,29 @@ async function run() {
             const data = req.body;
             const date = new Date();
             data.createdAt = date;
-
-            console.log(data);
-
+            // console.log(data);
             const result = await petServiceCollection.insertOne(data);
             res.send(result);
 
         })
+
+        // get services from database
+        app.get('/services', async(req, res)=>{
+            const result = await petServiceCollection.find().toArray();
+            res.send(result);
+        })
+
+        // get specific service
+        app.get('/services/:id', async(req, res)=>{
+            const id = req.params;
+            console.log(id);
+            
+            const query = {_id: new ObjectId(id)};
+            const result = await petServiceCollection.findOne(query);
+            res.send(result)
+            
+        })
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
