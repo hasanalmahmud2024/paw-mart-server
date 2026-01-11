@@ -39,14 +39,19 @@ async function run() {
 
         // get services from database
         app.get('/services', async(req, res)=>{
-            const result = await petServiceCollection.find().toArray();
+            const {category} = req.query
+            const query = {};
+            if (category) {
+                query.category = category;
+            }
+            const result = await petServiceCollection.find(query).toArray();
             res.send(result);
         })
 
         // get specific service
         app.get('/services/:id', async(req, res)=>{
             const id = req.params;
-            console.log(id);
+            // console.log(id);
             
             const query = {_id: new ObjectId(id)};
             const result = await petServiceCollection.findOne(query);
@@ -54,6 +59,39 @@ async function run() {
             
         })
 
+        // get many services at once
+        app.get('/my-services', async(req, res)=>{
+            const {email} = req.query;
+            const query = {email: email};
+            const result = await petServiceCollection.find(query).toArray();
+            res.send(result);
+            
+        })
+
+        // edit service
+        app.put('/update/:id', async(req, res)=>{
+            const data = req.body;
+            const id = req.params;
+            // console.log(data);
+            
+
+            const query = { _id: new ObjectId(id) };
+            const updatedService = {
+                $set: data
+            };
+
+            const result = await petServiceCollection.updateOne(query, updatedService);
+            res.send(result);
+        })
+
+
+        // delete one service
+        app.delete('/delete/:id', async(req, res)=>{
+            const id = req.params;
+            const query = {_id: new ObjectId(id)};
+            const result= await petServiceCollection.deleteOne(query);
+            res.send(result);
+        })
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
