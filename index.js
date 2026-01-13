@@ -25,6 +25,7 @@ async function run() {
 
         const database = client.db('petServices');
         const petServiceCollection = database.collection('services');
+        const ordersCollection = database.collection('orders');
 
         // save service to database
         app.post('/services', async (req, res) => {
@@ -38,8 +39,8 @@ async function run() {
         })
 
         // get services from database
-        app.get('/services', async(req, res)=>{
-            const {category} = req.query
+        app.get('/services', async (req, res) => {
+            const { category } = req.query
             const query = {};
             if (category) {
                 query.category = category;
@@ -49,47 +50,58 @@ async function run() {
         })
 
         // get specific service
-        app.get('/services/:id', async(req, res)=>{
-            const id = req.params;
+        app.get('/services/:id', async (req, res) => {
+            const { id } = req.params;
             // console.log(id);
-            
-            const query = {_id: new ObjectId(id)};
+
+            const query = { _id: new ObjectId(id) };
             const result = await petServiceCollection.findOne(query);
             res.send(result)
-            
+
         })
 
         // get many services at once
-        app.get('/my-services', async(req, res)=>{
-            const {email} = req.query;
-            const query = {email: email};
+        app.get('/my-services', async (req, res) => {
+            const { email } = req.query;
+            const query = { email: email };
             const result = await petServiceCollection.find(query).toArray();
             res.send(result);
-            
+
         })
 
         // edit service
-        app.put('/update/:id', async(req, res)=>{
+        app.put('/update/:id', async (req, res) => {
             const data = req.body;
             const id = req.params;
             // console.log(data);
-            
-
             const query = { _id: new ObjectId(id) };
             const updatedService = {
                 $set: data
             };
-
             const result = await petServiceCollection.updateOne(query, updatedService);
             res.send(result);
         })
 
 
         // delete one service
-        app.delete('/delete/:id', async(req, res)=>{
+        app.delete('/delete/:id', async (req, res) => {
             const id = req.params;
-            const query = {_id: new ObjectId(id)};
-            const result= await petServiceCollection.deleteOne(query);
+            const query = { _id: new ObjectId(id) };
+            const result = await petServiceCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // orders
+        app.post('/orders', async (req, res) => {
+            const data = req.body;
+            console.log(data);
+            const result = await ordersCollection.insertOne(data);
+            res.status(201).send(result);
+
+        })
+        // get my orders
+        app.get('/orders', async (req, res) => {
+            const result = await ordersCollection.find().toArray();
             res.send(result);
         })
 
