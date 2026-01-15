@@ -23,71 +23,80 @@ async function run() {
     try {
         // await client.connect();
 
-        const database = client.db('petServices');
-        const petServiceCollection = database.collection('services');
+        const database = client.db('petsNSupplies');
+        const petSuppliesCollection = database.collection('listings');
         const ordersCollection = database.collection('orders');
 
-        // save service to database
-        app.post('/services', async (req, res) => {
+        // save listing to database
+        app.post('/listings', async (req, res) => {
             const data = req.body;
             const date = new Date();
             data.createdAt = date;
             // console.log(data);
-            const result = await petServiceCollection.insertOne(data);
+            const result = await petSuppliesCollection.insertOne(data);
             res.send(result);
 
         })
 
-        // get services from database
-        app.get('/services', async (req, res) => {
-            const { category } = req.query
+        // get listings from database
+        app.get('/listings', async (req, res) => {
+            const { category, limit } = req.query;
+            console.log(req.query);
+            
             const query = {};
             if (category) {
                 query.category = category;
             }
-            const result = await petServiceCollection.find(query).toArray();
+            let listings = petSuppliesCollection.find(query);
+
+            if (limit) {
+                const limitNumber = parseInt(limit);
+                listings = listings.limit(limitNumber);
+            }
+
+            const result = await listings.toArray()
             res.send(result);
         })
 
-        // get specific service
-        app.get('/services/:id', async (req, res) => {
+        // get specific listing
+        app.get('/listing/:id', async (req, res) => {
             const { id } = req.params;
             // console.log(id);
 
             const query = { _id: new ObjectId(id) };
-            const result = await petServiceCollection.findOne(query);
+            const result = await petSuppliesCollection.findOne(query);
             res.send(result)
 
         })
 
-        // get many services at once
-        app.get('/my-services', async (req, res) => {
+        // get many listings at once
+        app.get('/my-listings', async (req, res) => {
             const { email } = req.query;
             const query = { email: email };
-            const result = await petServiceCollection.find(query).toArray();
+            const result = await petSuppliesCollection.find(query).toArray();
             res.send(result);
 
         })
 
-        // edit service
+        // edit listing
         app.put('/update/:id', async (req, res) => {
             const data = req.body;
-            const id = req.params;
+            const { id } = req.params;
             // console.log(data);
             const query = { _id: new ObjectId(id) };
             const updatedService = {
                 $set: data
             };
-            const result = await petServiceCollection.updateOne(query, updatedService);
+            const result = await petSuppliesCollection.updateOne(query, updatedService);
             res.send(result);
         })
 
 
-        // delete one service
+        // delete one listing
         app.delete('/delete/:id', async (req, res) => {
-            const id = req.params;
+            const { id } = req.params;
             const query = { _id: new ObjectId(id) };
-            const result = await petServiceCollection.deleteOne(query);
+            const result = await petSuppliesCollection.deleteOne(query);
             res.send(result);
         })
 
@@ -101,7 +110,9 @@ async function run() {
         })
         // get my orders
         app.get('/orders', async (req, res) => {
-            const result = await ordersCollection.find().toArray();
+            const { email } = req.query;
+            const query = email ? { email } : {};
+            const result = await ordersCollection.find(query).toArray();
             res.send(result);
         })
 
