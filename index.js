@@ -69,7 +69,7 @@ async function run() {
 
         })
 
-        // get many listings at once
+        // get my listings
         app.get('/my-listings', async (req, res) => {
             const { email } = req.query;
             const query = { email: email };
@@ -100,8 +100,8 @@ async function run() {
             res.send(result);
         })
 
-        // orders
-        app.post('/orders', async (req, res) => {
+        // make an order
+        app.post('/order', async (req, res) => {
             const data = req.body;
             console.log(data);
             const result = await ordersCollection.insertOne(data);
@@ -111,7 +111,7 @@ async function run() {
         // get my orders
         app.get('/orders', async (req, res) => {
             const { email } = req.query;
-            const query = email ? { email } : {};
+            const query = { buyerEmail: email };
             const result = await ordersCollection.find(query).toArray();
             res.send(result);
         })
